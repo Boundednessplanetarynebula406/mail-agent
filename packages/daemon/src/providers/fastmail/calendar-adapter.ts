@@ -42,12 +42,13 @@ export class FastmailCalendarAdapter {
   constructor(account: AccountConfig, auth: AuthMaterial) {
     this.client = new FastmailDavClient(account.fastmail?.caldavUrl ?? "https://caldav.fastmail.com", {
       username: auth.username,
-      password: auth.accessToken
+      password: auth.davPassword
     });
   }
 
   async listCalendars(): Promise<CalendarSummary[]> {
-    const responses = await this.client.propfind("/", `<?xml version="1.0" encoding="utf-8" ?>
+    const homes = await this.client.discoverHomes("caldav");
+    const responses = await this.client.propfind(homes.calendarHomeSetUrl, `<?xml version="1.0" encoding="utf-8" ?>
 <d:propfind xmlns:d="DAV:" xmlns:cs="http://calendarserver.org/ns/" xmlns:c="urn:ietf:params:xml:ns:caldav">
   <d:prop>
     <d:displayname />
@@ -58,6 +59,7 @@ export class FastmailCalendarAdapter {
 </d:propfind>`);
 
     return responses
+      .filter((entry) => entry.href !== homes.calendarHomeSetUrl)
       .filter((entry) => JSON.stringify(entry.props.resourcetype ?? "").includes("calendar"))
       .map((entry) => ({
         id: entry.href,

@@ -92,7 +92,8 @@ describe("FastmailMailAdapter", () => {
 
     const adapter = new FastmailMailAdapter(account, {
       username: "user@example.com",
-      accessToken: "token"
+      jmapAccessToken: "token",
+      davPassword: "app-password"
     });
     const results = await adapter.searchMessages({ text: "hello" });
 

@@ -37,13 +37,34 @@ class FileSecretStore implements SecretStore {
 
   async load(accountId: string): Promise<AuthMaterial> {
     const current = await this.readAll();
-    const secret = current[accountId];
+    const secret = current[accountId] as AuthMaterial | ({ username: string; accessToken: string } & Partial<AuthMaterial>) | undefined;
 
     if (!secret) {
       throw new AuthError(`No credentials stored for account: ${accountId}`);
     }
 
-    return secret;
+    if (
+      "jmapAccessToken" in secret &&
+      typeof secret.jmapAccessToken === "string" &&
+      "davPassword" in secret &&
+      typeof secret.davPassword === "string"
+    ) {
+      return {
+        username: secret.username,
+        jmapAccessToken: secret.jmapAccessToken,
+        davPassword: secret.davPassword
+      };
+    }
+
+    if ("accessToken" in secret) {
+      return {
+        username: secret.username,
+        jmapAccessToken: secret.accessToken,
+        davPassword: secret.accessToken
+      };
+    }
+
+    throw new AuthError(`Stored credentials for account ${accountId} are incomplete.`);
   }
 
   async remove(accountId: string): Promise<void> {
@@ -65,27 +86,35 @@ class KeytarSecretStore implements SecretStore {
   async save(accountId: string, material: AuthMaterial): Promise<void> {
     const keytar = await this.loadKeytar();
     await keytar.setPassword(SERVICE, `${accountId}:username`, material.username);
-    await keytar.setPassword(SERVICE, `${accountId}:token`, material.accessToken);
+    await keytar.setPassword(SERVICE, `${accountId}:jmap-token`, material.jmapAccessToken);
+    await keytar.setPassword(SERVICE, `${accountId}:dav-password`, material.davPassword);
   }
 
   async load(accountId: string): Promise<AuthMaterial> {
     const keytar = await this.loadKeytar();
-    const [username, accessToken] = await Promise.all([
+    const [username, jmapAccessToken, davPassword, legacyToken] = await Promise.all([
       keytar.getPassword(SERVICE, `${accountId}:username`),
+      keytar.getPassword(SERVICE, `${accountId}:jmap-token`),
+      keytar.getPassword(SERVICE, `${accountId}:dav-password`),
       keytar.getPassword(SERVICE, `${accountId}:token`)
     ]);
 
-    if (!username || !accessToken) {
+    const resolvedJmap = jmapAccessToken ?? legacyToken;
+    const resolvedDav = davPassword ?? legacyToken;
+
+    if (!username || !resolvedJmap || !resolvedDav) {
       throw new AuthError(`No credentials stored for account: ${accountId}`);
     }
 
-    return { username, accessToken };
+    return { username, jmapAccessToken: resolvedJmap, davPassword: resolvedDav };
   }
 
   async remove(accountId: string): Promise<void> {
     const keytar = await this.loadKeytar();
     await Promise.all([
       keytar.deletePassword(SERVICE, `${accountId}:username`),
+      keytar.deletePassword(SERVICE, `${accountId}:jmap-token`),
+      keytar.deletePassword(SERVICE, `${accountId}:dav-password`),
       keytar.deletePassword(SERVICE, `${accountId}:token`)
     ]);
   }

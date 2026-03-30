@@ -6,7 +6,8 @@ type FastmailAuthOptions = {
   accountId: string;
   email?: string;
   displayName?: string;
-  token?: string;
+  jmapToken?: string;
+  appPassword?: string;
   username?: string;
 };
 
@@ -22,7 +23,8 @@ async function prompt(question: string): Promise<string> {
 export async function authFastmail(options: FastmailAuthOptions): Promise<AccountConfig> {
   const email = options.email ?? (await prompt("Fastmail email address: "));
   const username = options.username ?? email;
-  const token = options.token ?? (await prompt("Fastmail API token or app password: "));
+  const jmapToken = options.jmapToken ?? (await prompt("Fastmail JMAP API token: "));
+  const appPassword = options.appPassword ?? (await prompt("Fastmail app password for CalDAV/CardDAV: "));
   const displayName = options.displayName ?? options.accountId;
 
   const account: AccountConfig = {
@@ -54,7 +56,8 @@ export async function authFastmail(options: FastmailAuthOptions): Promise<Accoun
   await upsertAccount(account);
   await getSecretStore().save(account.id, {
     username,
-    accessToken: token
+    jmapAccessToken: jmapToken,
+    davPassword: appPassword
   });
   return account;
 }

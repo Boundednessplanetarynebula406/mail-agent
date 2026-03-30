@@ -162,5 +162,6 @@ export type ToolResult<T> = {
 
 export type AuthMaterial = {
   username: string;
-  accessToken: string;
+  jmapAccessToken: string;
+  davPassword: string;
 };

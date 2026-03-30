@@ -38,12 +38,13 @@ export class FastmailContactsAdapter {
   constructor(account: AccountConfig, auth: AuthMaterial) {
     this.client = new FastmailDavClient(account.fastmail?.carddavUrl ?? "https://carddav.fastmail.com", {
       username: auth.username,
-      password: auth.accessToken
+      password: auth.davPassword
     });
   }
 
   async listAddressBooks(): Promise<AddressBookSummary[]> {
-    const responses = await this.client.propfind("/", `<?xml version="1.0" encoding="utf-8" ?>
+    const homes = await this.client.discoverHomes("carddav");
+    const responses = await this.client.propfind(homes.addressBookHomeSetUrl, `<?xml version="1.0" encoding="utf-8" ?>
 <d:propfind xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
   <d:prop>
     <d:displayname />
@@ -52,6 +53,7 @@ export class FastmailContactsAdapter {
 </d:propfind>`);
 
     return responses
+      .filter((entry) => entry.href !== homes.addressBookHomeSetUrl)
       .filter((entry) => JSON.stringify(entry.props.resourcetype ?? "").includes("addressbook"))
       .map((entry) => ({
         id: entry.href,

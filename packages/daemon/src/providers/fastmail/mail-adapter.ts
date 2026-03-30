@@ -153,7 +153,10 @@ export class FastmailMailAdapter {
     private readonly account: AccountConfig,
     auth: AuthMaterial
   ) {
-    this.client = new FastmailJmapClient(account.fastmail?.jmapSessionUrl ?? "https://api.fastmail.com/jmap/session", auth.accessToken);
+    this.client = new FastmailJmapClient(
+      account.fastmail?.jmapSessionUrl ?? "https://api.fastmail.com/jmap/session",
+      auth.jmapAccessToken
+    );
   }
 
   private async getMailboxMap(): Promise<Map<string, MailboxInfo>> {

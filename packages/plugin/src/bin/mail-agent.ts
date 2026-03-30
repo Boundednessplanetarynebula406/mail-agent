@@ -33,14 +33,16 @@ auth
   .requiredOption("--account <id>", "Account id")
   .option("--email <email>", "Fastmail email address")
   .option("--username <username>", "Username for CalDAV/CardDAV basic auth; defaults to email")
-  .option("--token <token>", "Fastmail API token or app password")
+  .option("--jmap-token <token>", "Fastmail JMAP API token")
+  .option("--app-password <password>", "Fastmail app password for CalDAV/CardDAV")
   .option("--name <displayName>", "Display name")
-  .action(async (options: { account: string; email?: string; username?: string; token?: string; name?: string }) => {
+  .action(async (options: { account: string; email?: string; username?: string; jmapToken?: string; appPassword?: string; name?: string }) => {
     const account = await authFastmail({
       accountId: options.account,
       email: options.email,
       username: options.username,
-      token: options.token,
+      jmapToken: options.jmapToken,
+      appPassword: options.appPassword,
       displayName: options.name
     });
     console.log(JSON.stringify(account, null, 2));
