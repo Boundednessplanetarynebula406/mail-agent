@@ -6,6 +6,10 @@ function asString(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+function isForbiddenDavError(error: unknown): boolean {
+  return error instanceof Error && /\b403\b/.test(error.message);
+}
+
 function parseIcsEvents(calendarId: string, calendarName: string, ics: string): EventSummary[] {
   const chunks = ics.split("BEGIN:VEVENT").slice(1);
   return chunks.map((chunk, index) => {
@@ -71,7 +75,7 @@ export class FastmailCalendarAdapter {
   async getEvents(options: { start: string; end: string; calendarId?: string }): Promise<EventSummary[]> {
     const calendars = await this.listCalendars();
     const scoped = options.calendarId ? calendars.filter((calendar) => calendar.id === options.calendarId) : calendars;
-    const events = await Promise.all(
+    const settled = await Promise.allSettled(
       scoped.map(async (calendar) => {
         const responses = await this.client.report(calendar.id, `<?xml version="1.0" encoding="utf-8" ?>
 <c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
@@ -98,6 +102,18 @@ export class FastmailCalendarAdapter {
       })
     );
 
-    return events.flat();
+    const events: EventSummary[] = [];
+    for (const result of settled) {
+      if (result.status === "fulfilled") {
+        events.push(...result.value);
+        continue;
+      }
+
+      if (options.calendarId || !isForbiddenDavError(result.reason)) {
+        throw result.reason;
+      }
+    }
+
+    return events;
   }
 }

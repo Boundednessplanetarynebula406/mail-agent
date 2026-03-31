@@ -218,6 +218,7 @@ Notes:
 
 - `search_messages` supports pagination, thread-collapsed search, mailbox-role filtering, and mailing-list exclusion.
 - `since` and `until` accept RFC3339 timestamps or `YYYY-MM-DD`.
+- `search_messages` supports `refresh: true` to bypass cached results when polling for newly delivered or recently mutated mail.
 
 ## Repo layout
 

@@ -36,7 +36,8 @@ export const toolSchemas = {
     position: z.number().int().min(0).optional(),
     since: z.string().optional(),
     until: z.string().optional(),
-    limit: z.number().int().min(1).max(250).optional()
+    limit: z.number().int().min(1).max(250).optional(),
+    refresh: z.boolean().optional()
   }),
   listMailboxes: z.object({
     accountId: z.string().min(1)
@@ -175,11 +176,11 @@ function normalizeSearchInput(input: z.infer<typeof toolSchemas.searchMessages>)
   };
 }
 
-async function cachedSearch(accountId: string, input: MessageSearchInput) {
+async function cachedSearch(accountId: string, input: MessageSearchInput, options?: { bypassCache?: boolean }) {
   const account = await getAccount(accountId);
   const cacheKey = `search:${accountId}:${JSON.stringify(input)}`;
-  const cached = await cache.read<ToolResult<unknown>>(cacheKey);
-  if (cached) {
+  const cached = options?.bypassCache ? undefined : await cache.read<ToolResult<unknown>>(cacheKey);
+  if (cached && !options?.bypassCache) {
     return { ...cached, cached: true };
   }
 
@@ -204,7 +205,9 @@ export const handlers = {
     };
   },
   async searchMessages(args: z.infer<typeof toolSchemas.searchMessages>) {
-    const result = await cachedSearch(args.accountId, normalizeSearchInput(args));
+    const result = await cachedSearch(args.accountId, normalizeSearchInput(args), {
+      bypassCache: args.refresh === true
+    });
     return {
       content: [{ type: "text" as const, text: render(result) }],
       structuredContent: result

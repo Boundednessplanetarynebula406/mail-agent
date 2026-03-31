@@ -509,7 +509,14 @@ export class FastmailMailAdapter {
 
   async archiveMessages(messageIds: string[]): Promise<{ archived: string[] }> {
     const inboxId = await this.findMailboxIdByRole("inbox");
-    const patch = inboxId ? { [`mailboxIds/${inboxId}`]: null } : {};
+    const archiveId = await this.findMailboxIdByRole("archive");
+    const patch: Record<string, unknown> = {};
+    if (inboxId) {
+      patch[`mailboxIds/${inboxId}`] = null;
+    }
+    if (archiveId) {
+      patch[`mailboxIds/${archiveId}`] = true;
+    }
     await this.updateEmails(messageIds, patch);
     return { archived: messageIds };
   }

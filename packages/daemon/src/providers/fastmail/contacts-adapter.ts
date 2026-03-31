@@ -61,11 +61,9 @@ export class FastmailContactsAdapter {
       }));
   }
 
-  async searchContacts(options: { query: string; addressBookId?: string }): Promise<ContactSummary[]> {
+  private async listContacts(addressBookId?: string): Promise<ContactSummary[]> {
     const books = await this.listAddressBooks();
-    const scoped = options.addressBookId ? books.filter((book) => book.id === options.addressBookId) : books;
-    const query = options.query.toLowerCase();
-
+    const scoped = addressBookId ? books.filter((book) => book.id === addressBookId) : books;
     const contacts = await Promise.all(
       scoped.map(async (book) => {
         const responses = await this.client.report(book.id, `<?xml version="1.0" encoding="utf-8" ?>
@@ -81,9 +79,7 @@ export class FastmailContactsAdapter {
           if (!vcard) {
             return [];
           }
-          const contact = parseVcard(book.id, entry.href, vcard);
-          const haystack = [contact.fullName, ...contact.emails, ...contact.organizations].join(" ").toLowerCase();
-          return haystack.includes(query) ? [contact] : [];
+          return [parseVcard(book.id, entry.href, vcard)];
         });
       })
     );
@@ -91,14 +87,20 @@ export class FastmailContactsAdapter {
     return contacts.flat();
   }
 
+  async searchContacts(options: { query: string; addressBookId?: string }): Promise<ContactSummary[]> {
+    const query = options.query.toLowerCase();
+    const contacts = await this.listContacts(options.addressBookId);
+    return contacts.filter((contact) => {
+      const haystack = [contact.id, contact.fullName, ...contact.emails, ...contact.organizations].join(" ").toLowerCase();
+      return haystack.includes(query);
+    });
+  }
+
   async getContact(contactId: string): Promise<ContactSummary> {
-    const results = await this.searchContacts({ query: contactId });
-    const exact = results.find((contact) => contact.id === contactId);
+    const contacts = await this.listContacts();
+    const exact = contacts.find((contact) => contact.id === contactId);
     if (exact) {
       return exact;
-    }
-    if (results[0]) {
-      return results[0];
     }
     throw new Error(`Contact not found: ${contactId}`);
   }

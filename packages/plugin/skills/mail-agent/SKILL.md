@@ -21,6 +21,7 @@ Use this skill to operate against configured `mail-agent` accounts through the l
 - Treat `delete_messages` as a gated destructive action. First request the confirmation token, then call again with that token only if the user clearly wants permanent deletion.
 - `search_messages` accepts `YYYY-MM-DD` and RFC3339 timestamps for `since` and `until`.
 - Use `excludeMailingLists: true` when you want human conversations rather than newsletters and alerts.
+- Use `refresh: true` when polling for a new delivery or checking immediately after send, archive, move, tag, or mark.
 
 ## Accounts
 

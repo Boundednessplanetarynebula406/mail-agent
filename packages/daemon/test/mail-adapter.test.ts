@@ -312,4 +312,63 @@ describe("FastmailMailAdapter", () => {
 
     expect(message?.textBody).toBe("Hello world");
   });
+
+  it("archives messages by moving them into the archive mailbox", async () => {
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          apiUrl: "https://api.fastmail.com/jmap/api/",
+          primaryAccounts: {
+            "urn:ietf:params:jmap:mail": "acct",
+            "urn:ietf:params:jmap:submission": "acct"
+          }
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          methodResponses: [["Mailbox/query", { ids: ["mb-inbox", "mb-archive"] }, "0"]]
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          methodResponses: [[
+            "Mailbox/get",
+            {
+              list: [
+                { id: "mb-inbox", name: "Inbox", role: "inbox" },
+                { id: "mb-archive", name: "Archive", role: "archive" }
+              ]
+            },
+            "0"
+          ]]
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          methodResponses: [["Email/set", {}, "0"]]
+        })
+      });
+
+    const adapter = new FastmailMailAdapter(account, {
+      username: "user@example.com",
+      jmapAccessToken: "token",
+      davPassword: "app-password"
+    });
+
+    await adapter.archiveMessages(["m1"]);
+
+    const updateCall = JSON.parse(String(fetchMock.mock.calls[3]?.[1]?.body));
+    expect(updateCall.methodCalls[0][1]).toMatchObject({
+      update: {
+        m1: {
+          "mailboxIds/mb-inbox": null,
+          "mailboxIds/mb-archive": true
+        }
+      }
+    });
+  });
 });
