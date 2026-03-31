@@ -8,6 +8,9 @@ description: Triage a Mail Agent inbox into actionable buckets such as urgent, n
 Use this skill for direct inbox-triage requests.
 
 - Default to recent inbox mail unless the user asks for a broader audit.
-- Start with `search_messages` and only read full bodies for the shortlist.
+- Start with `search_messages` using `collapseThreads: true`.
+- Prefer `excludeMailingLists: true` unless the user explicitly wants bulk mail included.
+- Only read full bodies for the shortlist.
 - Return explicit buckets such as `Urgent`, `Needs reply soon`, `Waiting`, and `FYI`.
 - Include sender, subject, reason, and likely next action for each item.
+- State the date range or mailbox scope used for the triage.

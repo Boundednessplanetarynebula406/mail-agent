@@ -1,17 +1,31 @@
 {
   "name": "@mail-agent/daemon",
   "version": "0.1.0",
+  "description": "Local MCP daemon for Mail Agent mailbox, calendar, and contacts workflows.",
   "type": "module",
+  "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bestlux/mail-agent.git"
+  },
+  "homepage": "https://github.com/bestlux/mail-agent",
+  "bugs": {
+    "url": "https://github.com/bestlux/mail-agent/issues"
   },
   "dependencies": {
     "@mail-agent/shared": "workspace:*",
@@ -23,5 +37,13 @@
     "@types/node": "25.5.0",
     "typescript": "6.0.2",
     "vitest": "4.1.2"
-  }
+  },
+  "keywords": [
+    "codex",
+    "mcp",
+    "fastmail",
+    "mail",
+    "calendar",
+    "contacts"
+  ]
 }

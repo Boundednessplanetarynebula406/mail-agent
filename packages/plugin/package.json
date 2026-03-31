@@ -23,6 +23,9 @@
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@mail-agent/daemon": "workspace:*",
     "@mail-agent/shared": "workspace:*",
@@ -35,10 +38,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iomancer/mail-agent.git"
+    "url": "git+https://github.com/bestlux/mail-agent.git"
   },
-  "homepage": "https://github.com/iomancer/mail-agent",
+  "homepage": "https://github.com/bestlux/mail-agent",
   "bugs": {
-    "url": "https://github.com/iomancer/mail-agent/issues"
-  }
+    "url": "https://github.com/bestlux/mail-agent/issues"
+  },
+  "keywords": [
+    "codex",
+    "plugin",
+    "mcp",
+    "fastmail",
+    "email",
+    "calendar",
+    "contacts"
+  ]
 }

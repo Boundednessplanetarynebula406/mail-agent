@@ -3,6 +3,7 @@ dist/
 .turbo/
 .DS_Store
 coverage/
+.artifacts/
 .env
 .env.*
 *.log

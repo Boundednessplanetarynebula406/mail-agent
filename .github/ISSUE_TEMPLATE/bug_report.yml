@@ -1,0 +1,49 @@
+name: Bug report
+description: Report a reproducible problem in mail-agent.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened and what did you expect instead?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Mail / JMAP
+        - Calendar / CalDAV
+        - Contacts / CardDAV
+        - Plugin install
+        - Packaging / release
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node version, package manager, and whether you used keychain or file-backed secrets.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Share the smallest useful reproduction. Redact secrets and mailbox contents.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output
+      description: Paste logs or command output with secrets removed.

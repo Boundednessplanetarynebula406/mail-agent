@@ -4,6 +4,14 @@
   "version": "0.1.0",
   "description": "Cross-platform Codex plugin and daemon for Fastmail-first agent workflows.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bestlux/mail-agent.git"
+  },
+  "homepage": "https://github.com/bestlux/mail-agent",
+  "bugs": {
+    "url": "https://github.com/bestlux/mail-agent/issues"
+  },
   "packageManager": "pnpm@10.29.3",
   "engines": {
     "node": ">=22",
@@ -13,6 +21,8 @@
     "build": "corepack pnpm -r build",
     "clean": "corepack pnpm -r clean",
     "lint": "corepack pnpm -r typecheck",
+    "pack:check": "node -e \"require('node:fs').rmSync('.artifacts', { recursive: true, force: true })\" && corepack pnpm --filter \"./packages/*\" -r pack --pack-destination ../../.artifacts && node -e \"require('node:fs').rmSync('.artifacts', { recursive: true, force: true })\"",
+    "release:dry-run": "corepack pnpm -r publish --dry-run --no-git-checks",
     "test": "corepack pnpm -r test",
     "typecheck": "corepack pnpm -r typecheck"
   }

@@ -1,116 +1,150 @@
 # mail-agent
 
-`mail-agent` is a Fastmail-first Codex plugin that gives agents a structured way to work with email, calendars, and contacts without scraping a human mail client.
+`mail-agent` is a Fastmail-first Codex plugin and local daemon for agent-friendly email, calendar, and contacts workflows.
 
-It bundles three things:
+It is built for the cases where "use my mailbox like an API" works better than "drive a human mail client through text scraping."
 
-- a local MCP daemon with typed tools for mail, calendar, and contacts
-- a Codex plugin bundle with mailbox-focused skills
-- a small CLI for install, auth, health checks, and local setup
+## What it is
 
-If you want Codex to do inbox triage, thread summaries, reply drafting, trusted mailbox actions, calendar briefs, and contact lookup from one local integration, this is the repo.
+The repo ships three coordinated pieces:
 
-## What it does
+- `mail-agent`: the public CLI and Codex plugin bundle
+- `@mail-agent/daemon`: the local MCP daemon that exposes structured tools
+- `@mail-agent/shared`: shared runtime, config, policy, and secret-store logic
 
-Current v1 behavior:
+In practice, the top-level package is what most people care about. The other two packages exist so the workspace can be developed, tested, and released cleanly.
 
-- Mail via Fastmail `JMAP`
-  - list mailboxes
-  - search
-  - read message batches
-  - read threads
-  - compose
-  - draft replies
-  - send
-  - archive
-  - move
-  - tag
-  - mark
-  - delete with explicit confirmation token
-- Calendar via Fastmail `CalDAV`
-  - list calendars
-  - read events
-- Contacts via Fastmail `CardDAV`
-  - list address books
-  - search contacts
-  - fetch a single contact
+## What it does today
 
-The tool names are provider-generic, but Fastmail is the only supported provider in v1.
+v1 is Fastmail-focused and supports:
 
-## Why this exists
+- Mail via `JMAP`
+  - `list_mailboxes`
+  - `search_messages`
+  - `read_message_batch`
+  - `read_thread`
+  - `compose_message`
+  - `draft_reply`
+  - `send_message`
+  - `archive_messages`
+  - `move_messages`
+  - `tag_messages`
+  - `mark_messages`
+  - `delete_messages` with explicit confirmation
+- Calendar via `CalDAV`
+  - `list_calendars`
+  - `get_events`
+- Contacts via `CardDAV`
+  - `search_contacts`
+  - `get_contact`
 
-Most mail integrations for agents fall into one of two buckets:
+The tool names are provider-generic on purpose, but Fastmail is the only supported provider in v1.
 
-- thin wrappers around a single SaaS mailbox
-- generic email clients that are great for humans and awkward for agents
+## Why it exists
 
-`mail-agent` takes the other route:
+Most mailbox integrations for agents land in one of two camps:
+
+- vendor-specific APIs with weak workflow guidance
+- general-purpose mail clients that were designed for humans, not models
+
+`mail-agent` takes a different route:
 
 - structured tool contracts instead of terminal scraping
-- mailbox workflows designed for agent use, not for a human UI
-- skills that tell Codex how to search, shortlist, draft, and mutate safely
-- local-first setup so your account stays under your control
+- skills that teach Codex how to search, shortlist, summarize, draft, and mutate safely
+- local-first setup so credentials stay on your machine
+- an explicit safety model for sends and destructive actions
 
-## How Codex sees it
+## How it works
 
-After install, Codex gets:
+At runtime the flow is:
+
+1. Codex loads the local `Mail Agent` plugin bundle.
+2. The plugin starts a local stdio MCP server named `mail-agent`.
+3. The daemon reads local account config plus secrets from the OS keychain or a file-backed development store.
+4. The daemon talks to Fastmail over:
+   - `JMAP` for mail
+   - `CalDAV` for calendars
+   - `CardDAV` for contacts
+5. Skills tell the agent how to use the tools well, not just that the tools exist.
+
+That last point matters. The tool layer makes actions possible. The skill layer makes the agent behave sensibly.
+
+## What Codex gets
+
+After install, Codex sees:
 
 - a plugin called `Mail Agent`
-- a local stdio MCP server named `mail-agent`
-- skills for:
+- a local MCP server called `mail-agent`
+- workflow skills:
   - `mail-agent`
   - `mail-agent-inbox-triage`
   - `calendar-brief`
   - `contacts-lookup`
 
-That means you can ask Codex things like:
+Example prompts:
 
 - "Use `mail-agent` to summarize the latest recruiter thread and draft the reply."
 - "Use `mail-agent-inbox-triage` to sort unread inbox mail into urgent, reply soon, waiting, and FYI."
 - "Use `calendar-brief` to summarize my next two days and flag conflicts."
-- "Use `contacts-lookup` to find Jane from Acme."
+- "Use `contacts-lookup` to find Jane from Acme and confirm her best email."
 
 ## Requirements
 
 - Node `22+`
 - `pnpm` via Corepack
 - Codex with plugins enabled
-- A Fastmail account with:
-  - a `JMAP API token` for mail
-  - an `app password` for CalDAV/CardDAV
+- A Fastmail account
+- Two Fastmail credentials:
+  - `JMAP API token` for mail
+  - `app password` for CalDAV/CardDAV
 
 Notes:
 
 - v1 does not use OAuth.
-- v1 does not support calendar/contact writes.
+- v1 does not support calendar or contact writes.
 - `delete_messages` is always gated, even in trusted mode.
 
-## Install
+## Install from source
 
-Clone the repo and build it:
+Clone and build the workspace:
 
 ```powershell
-git clone https://github.com/iomancer/mail-agent.git
+git clone https://github.com/bestlux/mail-agent.git
 cd mail-agent
 corepack pnpm install
 corepack pnpm build
 ```
 
-Install the local plugin bundle into your Codex marketplace:
+Install the local plugin bundle into Codex:
 
 ```powershell
 node packages/plugin/dist/bin/mail-agent.js install
 ```
 
-That writes:
+Authenticate a Fastmail account:
 
-- plugin bundle: `~/plugins/mail-agent`
-- marketplace entry: `~/.agents/plugins/marketplace.json`
+```powershell
+node packages/plugin/dist/bin/mail-agent.js auth fastmail --account personal --email you@fastmail.com
+```
 
-On Windows that usually means:
+Run a health check:
 
-- plugin bundle: `C:\Users\<you>\plugins\mail-agent`
-- marketplace entry: `C:\Users\<you>\.agents\plugins\marketplace.json`
+```powershell
+node packages/plugin/dist/bin/mail-agent.js doctor
+```
+
+## Install from npm
+
+The release layout is designed so the public package is `mail-agent`, with `@mail-agent/daemon` and `@mail-agent/shared` published alongside it as internal support packages.
+
+After the packages are published, the intended CLI install is:
+
+```powershell
+npm install -g mail-agent
+mail-agent install
+mail-agent auth fastmail --account personal --email you@fastmail.com
+mail-agent doctor
+```
 
 ## Fastmail setup
 
@@ -119,18 +153,7 @@ You need two credentials:
 1. `JMAP API token`
 2. `app password` for CalDAV/CardDAV
 
-Authenticate a Fastmail account:
-
-```powershell
-node packages/plugin/dist/bin/mail-agent.js auth fastmail --account personal --email you@fastmail.com
-```
-
-The CLI will prompt for:
-
-- Fastmail JMAP API token
-- Fastmail app password for CalDAV/CardDAV
-
-You can also pass them non-interactively:
+The interactive auth flow prompts for both. You can also pass them non-interactively:
 
 ```powershell
 node packages/plugin/dist/bin/mail-agent.js auth fastmail `
@@ -140,25 +163,7 @@ node packages/plugin/dist/bin/mail-agent.js auth fastmail `
   --app-password <app-password>
 ```
 
-## Quick start
-
-Check that the runtime is healthy:
-
-```powershell
-node packages/plugin/dist/bin/mail-agent.js doctor
-```
-
-Typical local workflow:
-
-```powershell
-corepack pnpm install
-corepack pnpm build
-node packages/plugin/dist/bin/mail-agent.js install
-node packages/plugin/dist/bin/mail-agent.js auth fastmail --account personal --email you@fastmail.com
-node packages/plugin/dist/bin/mail-agent.js doctor
-```
-
-## Runtime and secrets
+## Runtime and secret storage
 
 Runtime state lives under your OS config directory:
 
@@ -166,67 +171,55 @@ Runtime state lives under your OS config directory:
 - macOS: `~/Library/Application Support/mail-agent`
 - Linux: `$XDG_CONFIG_HOME/mail-agent` or `~/.config/mail-agent`
 
-By default, secrets use the OS keychain via `keytar`.
+Secrets default to the OS keychain via `keytar`.
 
-For testing or CI, you can force a file-backed secret store:
+For testing or CI you can force file-backed secrets:
 
 ```powershell
 $env:MAIL_AGENT_SECRET_BACKEND='file'
 ```
 
-That stores secrets in the runtime directory instead of the OS keychain. Useful for local dev, not ideal for permanent use.
+That stores credentials in the runtime directory instead of the OS keychain. Fine for local development and CI. Not ideal for day-to-day use.
+
+If your package manager blocks native postinstall scripts, `keytar` may need explicit build approval before the keychain backend works.
 
 ## Safety model
 
-`mail-agent` is intentionally not a free-for-all.
+`mail-agent` is meant to be useful without being reckless.
 
-- Mail send is allowed only after account auth and trust policy says yes.
-- Archive, move, tag, and mark are allowed in trusted mode.
-- Delete is always a two-step flow.
-- Calendar and contacts are read-only in v1.
+- `send_message` is available only after account auth and policy allow it
+- archive, move, tag, and mark are allowed in trusted mode
+- `delete_messages` is always a two-step flow
+- calendar and contacts are read-only in v1
 
-Delete specifically works like this:
+Delete is intentionally explicit:
 
-1. first call returns a confirmation token
-2. second call must include that token
+1. first call requests a confirmation token
+2. second call repeats the delete with that token
 
-This keeps destructive mailbox actions explicit even when everything else is trusted.
+That keeps permanent deletion out of the "oops, the agent inferred too much" category.
 
-## Public tool surface
+## Search behavior that matters in real use
 
-The daemon currently exposes:
+The search tool is where most real workflows start, so the useful details are worth calling out:
 
-- `list_accounts`
-- `list_mailboxes`
-- `search_messages`
-- `read_message_batch`
-- `read_thread`
-- `compose_message`
-- `draft_reply`
-- `send_message`
-- `archive_messages`
-- `move_messages`
-- `tag_messages`
-- `mark_messages`
-- `delete_messages`
-- `list_calendars`
-- `get_events`
-- `search_contacts`
-- `get_contact`
+- `collapseThreads: true` keeps broad scans readable
+- `mailboxRole` is better than hardcoded mailbox names when possible
+- `excludeMailingLists: true` helps for person-to-person scans
+- `since` and `until` accept RFC3339 timestamps or `YYYY-MM-DD`
+- `refresh: true` bypasses short-lived cache entries when polling after send or mutation
 
-Notes:
+Those behaviors exist because they materially improve agent use, not because they are cute transport options.
 
-- `search_messages` supports pagination, thread-collapsed search, mailbox-role filtering, and mailing-list exclusion.
-- `since` and `until` accept RFC3339 timestamps or `YYYY-MM-DD`.
-- `search_messages` supports `refresh: true` to bypass cached results when polling for newly delivered or recently mutated mail.
-
-## Repo layout
+## Repository layout
 
 ```text
 packages/
-  shared/   shared types, config, caching, policy, secret handling
-  daemon/   local MCP daemon and Fastmail protocol adapters
-  plugin/   Codex plugin metadata, skills, CLI, and installer
+  plugin/   Codex plugin bundle, CLI, installer, skills
+  daemon/   local MCP daemon and Fastmail adapters
+  shared/   runtime paths, config, cache, policy, secret handling
+
+.github/    CI and contributor-facing GitHub configuration
 ```
 
 ## Development
@@ -249,54 +242,61 @@ Run tests:
 corepack pnpm test
 ```
 
+Check package contents before publishing:
+
+```powershell
+corepack pnpm pack:check
+```
+
+Dry-run the workspace publish flow:
+
+```powershell
+corepack pnpm release:dry-run
+```
+
 Run the daemon directly:
 
 ```powershell
 node packages/plugin/dist/bin/mail-agent.js daemon
 ```
 
-## Current support policy
+## Support policy
 
-- Supported provider in v1: Fastmail
-- Mail transport/API: JMAP
-- Calendar: CalDAV read only
-- Contacts: CardDAV read only
-- No OAuth in v1
-- No full local mailbox sync in v1
-- No public standalone MCP product in v1 beyond the plugin's local daemon
+Supported in v1:
+
+- Fastmail mail via `JMAP`
+- Fastmail calendars via `CalDAV` read operations
+- Fastmail contacts via `CardDAV` read operations
+
+Not supported in v1:
+
+- OAuth
+- calendar writes
+- contact writes
+- full local mailbox mirroring
+- non-Fastmail providers as first-class supported targets
 
 ## Known caveats
 
-- Fastmail mail and DAV auth are intentionally separate:
-  - JMAP API token for mail
-  - app password for CalDAV/CardDAV
-- If your package manager blocks native build scripts, `keytar` may not load until you approve or rebuild it.
-- Contact search is intentionally simple in v1 and will behave more like a broad address-book scan than a server-side indexed search.
-- Event parsing is currently pragmatic, not a full iCalendar engine.
+- Fastmail mail auth and DAV auth are separate by design
+- contact search is a pragmatic address-book scan, not a server-side indexed search engine
+- event parsing is intentionally lightweight and does not aim to be a full iCalendar implementation yet
+
+## Docs
+
+- [CONTRIBUTING.md](./CONTRIBUTING.md)
+- [SECURITY.md](./SECURITY.md)
+- [PRIVACY.md](./PRIVACY.md)
+- [TERMS.md](./TERMS.md)
+- [SUPPORT.md](./SUPPORT.md)
+- [RELEASING.md](./RELEASING.md)
 
 ## Roadmap
 
-Planned next steps:
+Near-term improvements:
 
-- better event parsing and recurrence handling
-- stronger contact matching
+- stronger recurrence and event parsing
+- richer contact matching
 - provider adapters beyond Fastmail
-- optional local indexing/caching improvements
-- better packaging for npm-based installs
-
-## Contributing
-
-Issues and PRs are welcome, especially around:
-
-- provider adapters
-- DAV edge cases
-- richer mailbox workflows
-- packaging and install ergonomics
-- test coverage for weird real-world mailboxes
-
-If you open a bug, include:
-
-- OS
-- Node version
-- whether you used keychain or file-backed secrets
-- whether the issue is JMAP, CalDAV, CardDAV, or plugin install related
+- optional local indexing for heavier research workflows
+- more polished release automation

@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "description": "Agent-first mail, calendar, and contacts workflows with Fastmail support.",
   "author": {
-    "name": "iomancer",
-    "email": "support@example.com",
-    "url": "https://github.com/iomancer"
+    "name": "bestlux",
+    "url": "https://github.com/bestlux"
   },
-  "homepage": "https://github.com/iomancer/mail-agent",
-  "repository": "https://github.com/iomancer/mail-agent",
+  "homepage": "https://github.com/bestlux/mail-agent",
+  "repository": "https://github.com/bestlux/mail-agent",
   "license": "MIT",
   "keywords": [
     "mail",
@@ -24,15 +23,15 @@
     "displayName": "Mail Agent",
     "shortDescription": "Read and automate Fastmail-first workflows",
     "longDescription": "Use Mail Agent to search inboxes, summarize threads, draft replies, send email, inspect calendars, and look up contacts through a local Fastmail-first daemon.",
-    "developerName": "iomancer",
+    "developerName": "bestlux",
     "category": "Productivity",
     "capabilities": [
       "Interactive",
       "Write"
     ],
-    "websiteURL": "https://github.com/iomancer/mail-agent",
-    "privacyPolicyURL": "https://github.com/iomancer/mail-agent",
-    "termsOfServiceURL": "https://github.com/iomancer/mail-agent",
+    "websiteURL": "https://github.com/bestlux/mail-agent",
+    "privacyPolicyURL": "https://github.com/bestlux/mail-agent/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/bestlux/mail-agent/blob/main/TERMS.md",
     "defaultPrompt": [
       "Summarize my inbox and draft the reply.",
       "Review today's calendar and flag conflicts.",

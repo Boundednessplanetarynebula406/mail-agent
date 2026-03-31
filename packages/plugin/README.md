@@ -1,12 +1,15 @@
 # mail-agent plugin bundle
 
-This package contains the public-facing Codex plugin pieces for `mail-agent`:
+This package contains the public Codex-facing layer for `mail-agent`:
 
-- `.codex-plugin/plugin.json`
-- `.mcp.json`
-- skill definitions
-- local install/auth CLI
+- the `.codex-plugin/plugin.json` manifest
+- the local MCP server wiring in `.mcp.json`
+- the plugin skills and workflow references
+- the install, auth, doctor, and daemon CLI entrypoints
 
-For setup and usage, start at the repo root README:
+Most users want the repo root docs first:
 
 - [README.md](../../README.md)
+- [CONTRIBUTING.md](../../CONTRIBUTING.md)
+
+If you install the published package, `mail-agent` is the CLI you run.
