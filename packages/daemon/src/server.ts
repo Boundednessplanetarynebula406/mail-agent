@@ -57,25 +57,25 @@ export function createServer(): McpServer {
 
   server.registerTool("archive_messages", {
     title: "Archive messages",
-    description: "Archive messages by removing them from the inbox mailbox.",
+    description: "Archive messages by removing them from the inbox mailbox. Set dryRun true to return a mutation preview without applying changes.",
     inputSchema: toolSchemas.archiveMessages.shape
   }, handlers.archiveMessages as never);
 
   server.registerTool("move_messages", {
     title: "Move messages",
-    description: "Move messages into a target mailbox id.",
+    description: "Move messages into a target mailbox id. Set dryRun true to return a mutation preview without applying changes.",
     inputSchema: toolSchemas.moveMessages.shape
   }, handlers.moveMessages as never);
 
   server.registerTool("tag_messages", {
     title: "Tag messages",
-    description: "Apply mail-agent keyword tags to messages.",
+    description: "Apply mail-agent keyword tags to messages. Set dryRun true to return a mutation preview without applying changes.",
     inputSchema: toolSchemas.tagMessages.shape
   }, handlers.tagMessages as never);
 
   server.registerTool("mark_messages", {
     title: "Mark messages",
-    description: "Toggle message keyword flags such as $seen or $flagged.",
+    description: "Toggle message keyword flags such as $seen or $flagged. Set dryRun true to return a mutation preview without applying changes.",
     inputSchema: toolSchemas.markMessages.shape
   }, handlers.markMessages as never);
 

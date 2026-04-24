@@ -3,6 +3,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const searchMessagesMock = vi.fn();
 const readMessageBatchMock = vi.fn();
 const readThreadMock = vi.fn();
+const sendMessageMock = vi.fn();
+const archiveMessagesMock = vi.fn();
+const moveMessagesMock = vi.fn();
+const tagMessagesMock = vi.fn();
+const markMessagesMock = vi.fn();
+const deleteMessagesMock = vi.fn();
+const assertMutationAllowedMock = vi.fn();
+const assertSendAllowedMock = vi.fn();
+const createProviderBundleMock = vi.fn();
+const issueDeleteConfirmationMock = vi.fn();
+const requiresDeleteConfirmationMock = vi.fn(() => true);
 
 const baseMessage = {
   id: "m1",
@@ -37,8 +48,8 @@ class MockFileCache {
 
 vi.mock("@iomancer/mail-agent-shared", () => ({
   FileCache: MockFileCache,
-  assertMutationAllowed: vi.fn(),
-  assertSendAllowed: vi.fn(),
+  assertMutationAllowed: assertMutationAllowedMock,
+  assertSendAllowed: assertSendAllowedMock,
   consumeDeleteConfirmation: vi.fn(),
   getAccount: vi.fn(async () => ({
     id: "personal",
@@ -59,16 +70,22 @@ vi.mock("@iomancer/mail-agent-shared", () => ({
       contactTtlMs: 60_000
     }
   })),
-  issueDeleteConfirmation: vi.fn(),
+  issueDeleteConfirmation: issueDeleteConfirmationMock,
   loadConfig: vi.fn(async () => ({ version: 1, accounts: [] })),
-  requiresDeleteConfirmation: vi.fn(() => true)
+  requiresDeleteConfirmation: requiresDeleteConfirmationMock
 }));
 
 vi.mock("../src/providers/factory.js", () => ({
-  createProviderBundle: vi.fn(async () => ({
+  createProviderBundle: createProviderBundleMock.mockImplementation(async () => ({
     searchMessages: searchMessagesMock,
     readMessageBatch: readMessageBatchMock,
-    readThread: readThreadMock
+    readThread: readThreadMock,
+    sendMessage: sendMessageMock,
+    archiveMessages: archiveMessagesMock,
+    moveMessages: moveMessagesMock,
+    tagMessages: tagMessagesMock,
+    markMessages: markMessagesMock,
+    deleteMessages: deleteMessagesMock
   }))
 }));
 
@@ -78,6 +95,18 @@ describe("handlers", () => {
     searchMessagesMock.mockReset();
     readMessageBatchMock.mockReset();
     readThreadMock.mockReset();
+    sendMessageMock.mockReset();
+    archiveMessagesMock.mockReset();
+    moveMessagesMock.mockReset();
+    tagMessagesMock.mockReset();
+    markMessagesMock.mockReset();
+    deleteMessagesMock.mockReset();
+    assertMutationAllowedMock.mockReset();
+    assertSendAllowedMock.mockReset();
+    issueDeleteConfirmationMock.mockReset();
+    requiresDeleteConfirmationMock.mockReset();
+    requiresDeleteConfirmationMock.mockReturnValue(true);
+    createProviderBundleMock.mockClear();
   });
 
   it("bypasses cached search results when refresh is true", async () => {
@@ -219,5 +248,134 @@ describe("handlers", () => {
     expect(message?.htmlBody).toContain("[mail-agent: body truncated from 757 to 500 characters.");
     expect(message?.bodyTruncated).toBe(true);
     expect(message?.originalHtmlBodyChars).toBe(757);
+  });
+
+  it("move_messages dryRun returns a preview without mutation policy or provider calls", async () => {
+    const { handlers } = await import("../src/tools.js");
+
+    const result = await handlers.moveMessages({
+      accountId: "personal",
+      messageIds: ["m1", "m2"],
+      destinationMailbox: "Archive",
+      dryRun: true
+    });
+
+    expect(result.structuredContent.data).toEqual({
+      dryRun: true,
+      action: "move",
+      messageIds: ["m1", "m2"],
+      destinationMailbox: "Archive"
+    });
+    expect(assertMutationAllowedMock).not.toHaveBeenCalled();
+    expect(createProviderBundleMock).not.toHaveBeenCalled();
+    expect(moveMessagesMock).not.toHaveBeenCalled();
+  });
+
+  it("archive/tag/mark dryRun return mutation previews", async () => {
+    const { handlers } = await import("../src/tools.js");
+
+    const archive = await handlers.archiveMessages({
+      accountId: "personal",
+      messageIds: ["m1"],
+      dryRun: true
+    });
+    const tag = await handlers.tagMessages({
+      accountId: "personal",
+      messageIds: ["m1"],
+      tags: ["todo", "follow-up"],
+      dryRun: true
+    });
+    const mark = await handlers.markMessages({
+      accountId: "personal",
+      messageIds: ["m1"],
+      flags: { "$seen": true, "$flagged": false },
+      dryRun: true
+    });
+
+    expect(archive.structuredContent.data).toEqual({
+      dryRun: true,
+      action: "archive",
+      messageIds: ["m1"]
+    });
+    expect(tag.structuredContent.data).toEqual({
+      dryRun: true,
+      action: "tag",
+      messageIds: ["m1"],
+      tags: ["todo", "follow-up"]
+    });
+    expect(mark.structuredContent.data).toEqual({
+      dryRun: true,
+      action: "mark",
+      messageIds: ["m1"],
+      flags: { "$seen": true, "$flagged": false }
+    });
+    expect(assertMutationAllowedMock).not.toHaveBeenCalled();
+    expect(createProviderBundleMock).not.toHaveBeenCalled();
+  });
+
+  it("send_message calls assertSendAllowed before provider send", async () => {
+    sendMessageMock.mockResolvedValueOnce({ id: "sent-1" });
+    const { handlers } = await import("../src/tools.js");
+
+    await handlers.sendMessage({
+      accountId: "personal",
+      draft: {
+        subject: "Hello",
+        to: ["to@example.com"],
+        textBody: "Body"
+      }
+    });
+
+    expect(assertSendAllowedMock).toHaveBeenCalledTimes(1);
+    expect(sendMessageMock).toHaveBeenCalledWith({
+      subject: "Hello",
+      to: ["to@example.com"],
+      textBody: "Body"
+    });
+  });
+
+  it("archive/move/tag/mark real calls require mutation policy and provider methods", async () => {
+    archiveMessagesMock.mockResolvedValueOnce({ archived: 1 });
+    moveMessagesMock.mockResolvedValueOnce({ moved: 1 });
+    tagMessagesMock.mockResolvedValueOnce({ tagged: 1 });
+    markMessagesMock.mockResolvedValueOnce({ marked: 1 });
+    const { handlers } = await import("../src/tools.js");
+
+    await handlers.archiveMessages({ accountId: "personal", messageIds: ["m1"] });
+    await handlers.moveMessages({ accountId: "personal", messageIds: ["m2"], destinationMailbox: "Projects" });
+    await handlers.tagMessages({ accountId: "personal", messageIds: ["m3"], tags: ["todo"] });
+    await handlers.markMessages({ accountId: "personal", messageIds: ["m4"], flags: { "$seen": true } });
+
+    expect(assertMutationAllowedMock).toHaveBeenCalledTimes(4);
+    expect(archiveMessagesMock).toHaveBeenCalledWith(["m1"]);
+    expect(moveMessagesMock).toHaveBeenCalledWith(["m2"], "Projects");
+    expect(tagMessagesMock).toHaveBeenCalledWith(["m3"], ["todo"]);
+    expect(markMessagesMock).toHaveBeenCalledWith(["m4"], { "$seen": true });
+  });
+
+  it("delete_messages issues confirmation before provider delete when required", async () => {
+    issueDeleteConfirmationMock.mockResolvedValueOnce({
+      token: "confirm-1",
+      accountId: "personal",
+      messageIds: ["m1"],
+      expiresAt: "2026-04-24T00:00:00Z"
+    });
+    const { handlers } = await import("../src/tools.js");
+
+    const result = await handlers.deleteMessages({
+      accountId: "personal",
+      messageIds: ["m1"]
+    });
+
+    expect(result.structuredContent.data).toEqual({
+      confirmationRequired: true,
+      confirmation: {
+        token: "confirm-1",
+        accountId: "personal",
+        messageIds: ["m1"],
+        expiresAt: "2026-04-24T00:00:00Z"
+      }
+    });
+    expect(deleteMessagesMock).not.toHaveBeenCalled();
   });
 });

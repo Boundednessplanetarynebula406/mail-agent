@@ -203,6 +203,15 @@ export type DeleteConfirmation = {
   expiresAt: string;
 };
 
+export type MutationPreview = {
+  dryRun: true;
+  action: "archive" | "move" | "tag" | "mark";
+  messageIds: string[];
+  destinationMailbox?: string;
+  tags?: string[];
+  flags?: Record<string, boolean>;
+};
+
 export type ToolResult<T> = {
   accountId: string;
   provider: ProviderType;

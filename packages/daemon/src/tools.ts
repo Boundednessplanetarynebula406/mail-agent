@@ -12,6 +12,7 @@ import {
   type DraftMessage,
   type MessageDetail,
   type MessageSearchInput,
+  type MutationPreview,
   type ToolResult
 } from "@iomancer/mail-agent-shared";
 import { createProviderBundle } from "./providers/factory.js";
@@ -106,22 +107,26 @@ export const toolSchemas = {
   }),
   archiveMessages: z.object({
     accountId: z.string().min(1),
-    messageIds: z.array(z.string()).min(1)
+    messageIds: z.array(z.string()).min(1),
+    dryRun: z.boolean().optional()
   }),
   moveMessages: z.object({
     accountId: z.string().min(1),
     messageIds: z.array(z.string()).min(1),
-    destinationMailbox: z.string().min(1)
+    destinationMailbox: z.string().min(1),
+    dryRun: z.boolean().optional()
   }),
   tagMessages: z.object({
     accountId: z.string().min(1),
     messageIds: z.array(z.string()).min(1),
-    tags: z.array(z.string()).min(1)
+    tags: z.array(z.string()).min(1),
+    dryRun: z.boolean().optional()
   }),
   markMessages: z.object({
     accountId: z.string().min(1),
     messageIds: z.array(z.string()).min(1),
-    flags: z.record(z.string(), z.boolean())
+    flags: z.record(z.string(), z.boolean()),
+    dryRun: z.boolean().optional()
   }),
   deleteMessages: z.object({
     accountId: z.string().min(1),
@@ -194,6 +199,15 @@ function normalizeSearchInput(input: z.infer<typeof toolSchemas.searchMessages>)
     since: normalizeDateFilter(input.since, "since"),
     until: normalizeDateFilter(input.until, "until"),
     limit: input.limit
+  };
+}
+
+async function mutationPreviewResult(accountId: string, preview: MutationPreview): Promise<ToolResult<MutationPreview>> {
+  const account = await getAccount(accountId);
+  return {
+    accountId: account.id,
+    provider: account.provider,
+    data: preview
   };
 }
 
@@ -337,6 +351,18 @@ export const handlers = {
     };
   },
   async archiveMessages(args: z.infer<typeof toolSchemas.archiveMessages>) {
+    if (args.dryRun === true) {
+      const result = await mutationPreviewResult(args.accountId, {
+        dryRun: true,
+        action: "archive",
+        messageIds: args.messageIds
+      });
+      return {
+        content: [{ type: "text" as const, text: render(result) }],
+        structuredContent: result
+      };
+    }
+
     const result = await withBundle(args.accountId, async (account, bundle) => {
       assertMutationAllowed(account);
       return await bundle.archiveMessages!(args.messageIds);
@@ -347,6 +373,19 @@ export const handlers = {
     };
   },
   async moveMessages(args: z.infer<typeof toolSchemas.moveMessages>) {
+    if (args.dryRun === true) {
+      const result = await mutationPreviewResult(args.accountId, {
+        dryRun: true,
+        action: "move",
+        messageIds: args.messageIds,
+        destinationMailbox: args.destinationMailbox
+      });
+      return {
+        content: [{ type: "text" as const, text: render(result) }],
+        structuredContent: result
+      };
+    }
+
     const result = await withBundle(args.accountId, async (account, bundle) => {
       assertMutationAllowed(account);
       return await bundle.moveMessages!(args.messageIds, args.destinationMailbox);
@@ -357,6 +396,19 @@ export const handlers = {
     };
   },
   async tagMessages(args: z.infer<typeof toolSchemas.tagMessages>) {
+    if (args.dryRun === true) {
+      const result = await mutationPreviewResult(args.accountId, {
+        dryRun: true,
+        action: "tag",
+        messageIds: args.messageIds,
+        tags: args.tags
+      });
+      return {
+        content: [{ type: "text" as const, text: render(result) }],
+        structuredContent: result
+      };
+    }
+
     const result = await withBundle(args.accountId, async (account, bundle) => {
       assertMutationAllowed(account);
       return await bundle.tagMessages!(args.messageIds, args.tags);
@@ -367,6 +419,19 @@ export const handlers = {
     };
   },
   async markMessages(args: z.infer<typeof toolSchemas.markMessages>) {
+    if (args.dryRun === true) {
+      const result = await mutationPreviewResult(args.accountId, {
+        dryRun: true,
+        action: "mark",
+        messageIds: args.messageIds,
+        flags: args.flags
+      });
+      return {
+        content: [{ type: "text" as const, text: render(result) }],
+        structuredContent: result
+      };
+    }
+
     const result = await withBundle(args.accountId, async (account, bundle) => {
       assertMutationAllowed(account);
       return await bundle.markMessages!(args.messageIds, args.flags);
