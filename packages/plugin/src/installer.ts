@@ -144,7 +144,8 @@ async function readMarketplace(filePath: string): Promise<Marketplace> {
 export async function installPluginBundle(): Promise<{ pluginPath: string; marketplacePath: string }> {
   const pluginRoot = getPluginInstallRoot();
   const target = path.join(pluginRoot, "mail-agent");
-  const marketplacePath = path.join(getMarketplaceRoot(), "plugins", "marketplace.json");
+  const marketplaceRoot = getMarketplaceRoot();
+  const marketplacePath = path.join(marketplaceRoot, "plugins", "marketplace.json");
 
   await fs.rm(target, { recursive: true, force: true });
   await fs.mkdir(target, { recursive: true });
@@ -166,7 +167,7 @@ export async function installPluginBundle(): Promise<{ pluginPath: string; marke
     name: "mail-agent",
     source: {
       source: "local" as const,
-      path: "./plugins/mail-agent"
+      path: normalizeMarketplacePath(path.relative(marketplaceRoot, target))
     },
     policy: {
       installation: "AVAILABLE" as const,
@@ -180,4 +181,9 @@ export async function installPluginBundle(): Promise<{ pluginPath: string; marke
 
   await fs.writeFile(marketplacePath, `${JSON.stringify(marketplace, null, 2)}\n`, "utf8");
   return { pluginPath: target, marketplacePath };
+}
+
+function normalizeMarketplacePath(relativePath: string): string {
+  const normalized = relativePath.split(path.sep).join("/");
+  return normalized.startsWith(".") ? normalized : `./${normalized}`;
 }

@@ -22,5 +22,5 @@ export function getMarketplaceRoot(): string {
 }
 
 export function getPluginInstallRoot(): string {
-  return path.join(os.homedir(), "plugins");
+  return path.join(os.homedir(), ".codex", "plugins");
 }
