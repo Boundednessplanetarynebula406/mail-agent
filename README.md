@@ -180,6 +180,8 @@ Run a health check:
 node packages/plugin/dist/bin/mail-agent.js doctor
 ```
 
+`doctor` reports runtime paths, secret backend, account credential status, Google scope summaries, delete support, and provider-specific repair commands when credentials are missing.
+
 ## Install from npm
 
 The public package name is `mail-agent`.
@@ -345,7 +347,11 @@ Stored secret material depends on the provider:
 `mail-agent` is meant to be useful without being reckless.
 
 - `send_message` is available only after account auth and policy allow it
+- message reads default to text only, omit HTML, and cap long bodies
+- full body reads require `bodyMode: "full"`; HTML also requires `includeHtml: true`
+- use `maxBodyChars` when a workflow needs more or less body text than the default cap
 - archive, move, tag, and mark are allowed in trusted mode
+- archive, move, tag, and mark accept `dryRun: true` to preview the mutation without applying it
 - `delete_messages` is always a two-step flow
 - calendar and contacts are read-only in v1
 
