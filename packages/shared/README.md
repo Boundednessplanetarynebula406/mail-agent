@@ -6,6 +6,6 @@ This package contains shared runtime paths, config parsing, secret-store selecti
 
 Most users want the top-level package instead:
 
-- [`mail-agent`](https://github.com/bestlux/mail-agent/tree/main/packages/plugin)
+- [`mail-agent`](https://github.com/bestlux/mail-agent/tree/main/plugins/mail-agent)
 
 Use this package directly only if you are developing Mail Agent itself or embedding its shared runtime pieces.

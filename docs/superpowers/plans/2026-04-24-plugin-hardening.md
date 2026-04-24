@@ -4,7 +4,7 @@
 
 **Goal:** Turn Mail Agent from a working prototype-quality Codex plugin into a polished, safer, smaller, and more agent-friendly plugin ready to ship.
 
-**Architecture:** Preserve the current three-package split: `packages/plugin` owns Codex packaging and CLI install, `packages/daemon` owns MCP tools and provider adapters, and `packages/shared` owns shared runtime/types/config/safety primitives. Harden the plugin in vertical slices: package/install correctness, response shaping, draft semantics, safety affordances, provider output normalization, auth diagnostics, and validation coverage.
+**Architecture:** Preserve the current three-package split: `plugins/mail-agent` owns Codex packaging and CLI install, `packages/daemon` owns MCP tools and provider adapters, and `packages/shared` owns shared runtime/types/config/safety primitives. Harden the plugin in vertical slices: package/install correctness, response shaping, draft semantics, safety affordances, provider output normalization, auth diagnostics, and validation coverage.
 
 **Tech Stack:** TypeScript, Node 22, pnpm workspaces, Vitest, MCP SDK, JMAP/Fastmail DAV, Google APIs, Codex plugin manifest under `.codex-plugin/plugin.json`.
 
@@ -15,8 +15,8 @@
 The branch currently has uncommitted but validated plugin-layout fixes:
 
 - `packages/shared/src/runtime.ts` installs local plugin bundles under `~/.codex/plugins`.
-- `packages/plugin/src/installer.ts` writes marketplace paths relative to the marketplace root.
-- `packages/plugin/test/install.test.ts` checks documented plugin layout and marketplace path resolution.
+- `plugins/mail-agent/src/installer.ts` writes marketplace paths relative to the marketplace root.
+- `plugins/mail-agent/test/install.test.ts` checks documented plugin layout and marketplace path resolution.
 
 Keep those changes. Do not revert them.
 
@@ -67,11 +67,11 @@ Known audit findings this plan resolves:
 - Modify `packages/daemon/src/providers/fastmail/contacts-adapter.ts`
   - Filter empty contact values and normalize organizations.
 
-- Modify `packages/plugin/src/installer.ts`
+- Modify `plugins/mail-agent/src/installer.ts`
   - Keep current path fix.
   - Replace direct dependency directory copying with published package file copying.
 
-- Modify `packages/plugin/test/install.test.ts`
+- Modify `plugins/mail-agent/test/install.test.ts`
   - Keep current plugin-layout tests.
   - Add installed bundle hygiene tests.
 
@@ -84,7 +84,7 @@ Known audit findings this plan resolves:
 - Modify `packages/daemon/test/google-adapters.test.ts`
   - Add Google adapter parity tests for draft reply and mutation preview.
 
-- Modify `packages/plugin/README.md` and root `README.md`
+- Modify `plugins/mail-agent/README.md` and root `README.md`
   - Document install location, safe read defaults, full-body opt-in, mutation preview, and auth repair commands.
 
 ---
@@ -93,15 +93,15 @@ Known audit findings this plan resolves:
 
 **Files:**
 - Modify already staged-by-content: `packages/shared/src/runtime.ts`
-- Modify already staged-by-content: `packages/plugin/src/installer.ts`
-- Modify already staged-by-content: `packages/plugin/test/install.test.ts`
+- Modify already staged-by-content: `plugins/mail-agent/src/installer.ts`
+- Modify already staged-by-content: `plugins/mail-agent/test/install.test.ts`
 
 - [ ] **Step 1: Review current diff**
 
 Run:
 
 ```powershell
-git diff -- packages/shared/src/runtime.ts packages/plugin/src/installer.ts packages/plugin/test/install.test.ts
+git diff -- packages/shared/src/runtime.ts plugins/mail-agent/src/installer.ts plugins/mail-agent/test/install.test.ts
 ```
 
 Expected: only the `~/.codex/plugins` install root, relative marketplace path, and plugin-layout tests are present.
@@ -122,7 +122,7 @@ Expected: plugin tests pass and all packages typecheck.
 Run:
 
 ```powershell
-git add packages/shared/src/runtime.ts packages/plugin/src/installer.ts packages/plugin/test/install.test.ts
+git add packages/shared/src/runtime.ts plugins/mail-agent/src/installer.ts plugins/mail-agent/test/install.test.ts
 git commit -m "fix(plugin): align local install layout with codex plugin docs"
 ```
 
@@ -504,12 +504,12 @@ git commit -m "feat(daemon): add dry-run previews for mailbox mutations"
 ### Task 5: Slim Installed Bundle To Published Runtime Files
 
 **Files:**
-- Modify `packages/plugin/src/installer.ts`
-- Modify `packages/plugin/test/install.test.ts`
+- Modify `plugins/mail-agent/src/installer.ts`
+- Modify `plugins/mail-agent/test/install.test.ts`
 
 - [ ] **Step 1: Add failing bundle hygiene test**
 
-In `packages/plugin/test/install.test.ts`, after install:
+In `plugins/mail-agent/test/install.test.ts`, after install:
 
 ```ts
 await expect(fs.stat(path.join(result.pluginPath, "node_modules", "@iomancer", "mail-agent-shared", "test"))).rejects.toMatchObject({
@@ -527,7 +527,7 @@ Expected before implementation: test fails because source/test files are copied.
 
 - [ ] **Step 2: Implement package-file allowlist**
 
-In `packages/plugin/src/installer.ts`, replace `copyPackageDirectory` with manifest-aware copying:
+In `plugins/mail-agent/src/installer.ts`, replace `copyPackageDirectory` with manifest-aware copying:
 
 ```ts
 async function getPackageFiles(source: string, manifest: PackageManifest): Promise<string[]> {
@@ -575,7 +575,7 @@ Run:
 ```powershell
 corepack pnpm --filter mail-agent test
 corepack pnpm -r build
-node packages/plugin/dist/bin/mail-agent.js install
+node plugins/mail-agent/dist/bin/mail-agent.js install
 node $env:USERPROFILE\.codex\plugins\mail-agent\dist\bin\mail-agent.js doctor
 ```
 
@@ -586,7 +586,7 @@ Expected: plugin test passes, installed bundle doctor reports account statuses.
 Run:
 
 ```powershell
-git add packages/plugin/src/installer.ts packages/plugin/test/install.test.ts
+git add plugins/mail-agent/src/installer.ts plugins/mail-agent/test/install.test.ts
 git commit -m "fix(plugin): install only runtime package files"
 ```
 
@@ -598,7 +598,7 @@ git commit -m "fix(plugin): install only runtime package files"
 - Modify `packages/shared/src/errors.ts`
 - Modify `packages/shared/src/secrets.ts`
 - Modify `packages/daemon/src/tools.ts`
-- Modify `packages/plugin/src/doctor.ts`
+- Modify `plugins/mail-agent/src/doctor.ts`
 - Test `packages/daemon/test/tools.test.ts`
 
 - [ ] **Step 1: Add expected error behavior tests**
@@ -629,7 +629,7 @@ If provider is unavailable at this layer, add the hint at `packages/daemon/src/t
 
 - [ ] **Step 3: Improve doctor output**
 
-In `packages/plugin/src/doctor.ts`, include `repairCommand` when `secretStatus` is missing:
+In `plugins/mail-agent/src/doctor.ts`, include `repairCommand` when `secretStatus` is missing:
 
 ```ts
 repairCommand: account.provider === "google-workspace"
@@ -643,13 +643,13 @@ Run:
 
 ```powershell
 corepack pnpm -r test
-node packages/plugin/dist/bin/mail-agent.js doctor
+node plugins/mail-agent/dist/bin/mail-agent.js doctor
 ```
 
 Then:
 
 ```powershell
-git add packages/shared/src/errors.ts packages/shared/src/secrets.ts packages/daemon/src/tools.ts packages/plugin/src/doctor.ts packages/daemon/test/tools.test.ts
+git add packages/shared/src/errors.ts packages/shared/src/secrets.ts packages/daemon/src/tools.ts plugins/mail-agent/src/doctor.ts packages/daemon/test/tools.test.ts
 git commit -m "fix(auth): add actionable setup repair hints"
 ```
 
@@ -757,7 +757,7 @@ git commit -m "fix(daemon): normalize calendar and contact output"
 
 **Files:**
 - Modify `README.md`
-- Modify `packages/plugin/README.md`
+- Modify `plugins/mail-agent/README.md`
 - Modify `RELEASING.md` if release validation changes
 
 - [ ] **Step 1: Document safer read defaults**
@@ -778,7 +778,7 @@ Mailbox mutation tools support `dryRun: true` for previewing archive, move, tag,
 
 - [ ] **Step 3: Document install location**
 
-Add to `packages/plugin/README.md`:
+Add to `plugins/mail-agent/README.md`:
 
 ```md
 `mail-agent install` copies the plugin bundle to `~/.codex/plugins/mail-agent` and registers it through the local marketplace file at `~/.agents/plugins/marketplace.json`.
@@ -793,7 +793,7 @@ corepack pnpm -r test
 corepack pnpm -r typecheck
 corepack pnpm -r build
 corepack pnpm pack:check
-node packages/plugin/dist/bin/mail-agent.js install
+node plugins/mail-agent/dist/bin/mail-agent.js install
 node $env:USERPROFILE\.codex\plugins\mail-agent\dist\bin\mail-agent.js doctor
 git diff --check
 git status --short --branch
@@ -812,7 +812,7 @@ Expected:
 Run:
 
 ```powershell
-git add README.md packages/plugin/README.md RELEASING.md
+git add README.md plugins/mail-agent/README.md RELEASING.md
 git commit -m "docs: document mail-agent plugin safety and install behavior"
 ```
 
@@ -834,7 +834,7 @@ Before calling the plugin ship-ready:
 - `corepack pnpm -r typecheck` passes.
 - `corepack pnpm -r build` passes.
 - `corepack pnpm pack:check` passes.
-- `node packages/plugin/dist/bin/mail-agent.js install` succeeds.
+- `node plugins/mail-agent/dist/bin/mail-agent.js install` succeeds.
 - `node $env:USERPROFILE\.codex\plugins\mail-agent\dist\bin\mail-agent.js doctor` succeeds.
 - Installed bundle no longer contains workspace `src` or `test` directories for vendored packages.
 - A read-only live Fastmail smoke covers mailbox search, message read with default shaping, calendars, contacts, and delete confirmation first step.

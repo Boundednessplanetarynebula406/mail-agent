@@ -6,6 +6,6 @@ This package contains the local MCP daemon and provider adapters that power the 
 
 Most users want the top-level package instead:
 
-- [`mail-agent`](https://github.com/bestlux/mail-agent/tree/main/packages/plugin)
+- [`mail-agent`](https://github.com/bestlux/mail-agent/tree/main/plugins/mail-agent)
 
 Use this package directly only if you are extending or embedding the daemon.

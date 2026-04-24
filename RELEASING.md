@@ -54,7 +54,7 @@ corepack pnpm release:version 0.2.0
 That updates:
 
 - `package.json`
-- `packages/plugin/package.json`
+- `plugins/mail-agent/package.json`
 - `packages/daemon/package.json`
 - `packages/shared/package.json`
 

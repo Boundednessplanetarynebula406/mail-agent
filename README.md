@@ -20,25 +20,25 @@ git clone https://github.com/bestlux/mail-agent.git
 cd mail-agent
 corepack pnpm install
 corepack pnpm build
-node packages/plugin/dist/bin/mail-agent.js install
+node plugins/mail-agent/dist/bin/mail-agent.js install
 ```
 
 Authenticate one account:
 
 ```powershell
-node packages/plugin/dist/bin/mail-agent.js auth fastmail --account personal --email you@fastmail.com
+node plugins/mail-agent/dist/bin/mail-agent.js auth fastmail --account personal --email you@fastmail.com
 ```
 
 or:
 
 ```powershell
-node packages/plugin/dist/bin/mail-agent.js auth google --account gmail --email you@gmail.com --client-id <client-id>
+node plugins/mail-agent/dist/bin/mail-agent.js auth google --account gmail --email you@gmail.com --client-id <client-id>
 ```
 
 Check the install:
 
 ```powershell
-node packages/plugin/dist/bin/mail-agent.js doctor
+node plugins/mail-agent/dist/bin/mail-agent.js doctor
 ```
 
 `doctor` reports runtime paths, account credential status, Google scopes, delete support, and provider-specific repair commands when credentials are missing.
@@ -129,7 +129,7 @@ Fastmail needs two credentials:
 The interactive auth flow prompts for both. You can also pass them directly:
 
 ```powershell
-node packages/plugin/dist/bin/mail-agent.js auth fastmail `
+node plugins/mail-agent/dist/bin/mail-agent.js auth fastmail `
   --account personal `
   --email you@fastmail.com `
   --jmap-token <token> `
@@ -154,7 +154,7 @@ Before running `auth google`:
 Example:
 
 ```powershell
-node packages/plugin/dist/bin/mail-agent.js auth google `
+node plugins/mail-agent/dist/bin/mail-agent.js auth google `
   --account gmail `
   --email you@gmail.com `
   --client-id <client-id>
@@ -163,7 +163,7 @@ node packages/plugin/dist/bin/mail-agent.js auth google `
 If browser launch is flaky:
 
 ```powershell
-node packages/plugin/dist/bin/mail-agent.js auth google `
+node plugins/mail-agent/dist/bin/mail-agent.js auth google `
   --account gmail `
   --email you@gmail.com `
   --client-id <client-id> `
@@ -247,8 +247,10 @@ If your package manager blocks native postinstall scripts, `keytar` may need exp
 ## Repo Layout
 
 ```text
+plugins/
+  mail-agent/   Codex plugin bundle, CLI, installer, skills
+
 packages/
-  plugin/   Codex plugin bundle, CLI, installer, skills
   daemon/   local MCP daemon and provider adapters
   shared/   runtime paths, config, cache, policy, secret handling
 
@@ -290,7 +292,7 @@ corepack pnpm release:dry-run
 Run the daemon directly:
 
 ```powershell
-node packages/plugin/dist/bin/mail-agent.js daemon
+node plugins/mail-agent/dist/bin/mail-agent.js daemon
 ```
 
 ## Releases

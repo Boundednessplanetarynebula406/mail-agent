@@ -16,7 +16,7 @@ if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(version)) {
 
 const files = [
   "package.json",
-  "packages/plugin/package.json",
+  "plugins/mail-agent/package.json",
   "packages/daemon/package.json",
   "packages/shared/package.json"
 ];

@@ -30,7 +30,7 @@ if (!tag.startsWith("v")) {
 const expectedVersion = tag.slice(1);
 const files = [
   "package.json",
-  "packages/plugin/package.json",
+  "plugins/mail-agent/package.json",
   "packages/daemon/package.json",
   "packages/shared/package.json"
 ];
