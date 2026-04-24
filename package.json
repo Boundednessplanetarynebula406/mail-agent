@@ -17,6 +17,14 @@
     "node": ">=22",
     "pnpm": ">=10.29.3"
   },
+  "pnpm": {
+    "overrides": {
+      "@hono/node-server": "1.19.14",
+      "hono": "4.12.15",
+      "postcss": "8.5.10",
+      "vite": "8.0.10"
+    }
+  },
   "scripts": {
     "build": "corepack pnpm -r build",
     "clean": "corepack pnpm -r clean",
